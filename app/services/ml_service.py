@@ -65,8 +65,15 @@ def predict_for_active_leads(client) -> list[dict]:
         return []
 
     df = pd.DataFrame(leads)
-    df["delivery_format"] = df["courses"].apply(lambda c: c["delivery_format"] if c else None)
-    df["course_name"] = df["courses"].apply(lambda c: c["course_name"] if c else None)
+    # Built as plain object-dtype Series rather than via .apply(): pandas otherwise infers
+    # its new (3.0+) string dtype for a mixed str/None column, which silently turns the
+    # None entries into NaN - and `nan or "-"` is truthy, so it would render as "nan".
+    df["delivery_format"] = pd.Series(
+        [c["delivery_format"] if c else None for c in df["courses"]], dtype="object", index=df.index,
+    )
+    df["course_name"] = pd.Series(
+        [c["course_name"] if c else None for c in df["courses"]], dtype="object", index=df.index,
+    )
 
     pipeline = get_ml_pipeline()
     X = build_inference_frame(df)

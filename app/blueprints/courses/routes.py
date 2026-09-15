@@ -1,6 +1,6 @@
 from datetime import date
 
-from flask import Blueprint, flash, redirect, render_template, request, url_for
+from flask import Blueprint, abort, flash, redirect, render_template, request, url_for
 
 from app.blueprints.courses.forms import CourseForm
 from app.extensions import get_supabase_client
@@ -41,8 +41,10 @@ def new_course():
 def edit_course(course_id):
     client = get_supabase_client()
     course = courses_service.get_course(client, course_id)
+    if course is None:
+        abort(404)
 
-    if request.method == "GET" and course:
+    if request.method == "GET":
         form = CourseForm(data={**course, "start_date": date.fromisoformat(course["start_date"])})
     else:
         form = CourseForm()

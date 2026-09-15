@@ -1,4 +1,4 @@
-from flask import Blueprint, flash, redirect, render_template, request, url_for
+from flask import Blueprint, abort, flash, redirect, render_template, request, url_for
 
 from app.blueprints.leads.forms import ConvertForm, LeadForm, StatusForm
 from app.constants import LEAD_STATUSES, SOURCES
@@ -58,6 +58,8 @@ def new_lead():
 def view_lead(lead_id):
     client = get_supabase_client()
     lead = leads_service.get_lead(client, lead_id)
+    if lead is None:
+        abort(404)
     courses = courses_service.list_courses(client, active_only=True)
 
     status_form = StatusForm(status=lead["status"])
@@ -76,6 +78,8 @@ def view_lead(lead_id):
 def edit_lead(lead_id):
     client = get_supabase_client()
     lead = leads_service.get_lead(client, lead_id)
+    if lead is None:
+        abort(404)
     courses = courses_service.list_courses(client, active_only=True)
 
     form = LeadForm(data=lead) if request.method == "GET" else LeadForm()
