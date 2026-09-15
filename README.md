@@ -7,6 +7,7 @@ Full functional specification: [`docs/`](docs/) (project definition, MVP/user fl
 ## Contents
 
 - [Screens](#screens)
+- [Screenshots](#screenshots)
 - [Architecture](#architecture)
 - [Data model & Supabase](#data-model--supabase)
 - [ML model](#ml-model)
@@ -25,6 +26,28 @@ Full functional specification: [`docs/`](docs/) (project definition, MVP/user fl
 | ML Predictions | `/predictions/` | Purchase probability, priority tier, and top contributing factors for every active (non-terminal) lead |
 
 The visual design follows a Google Stitch reference project ("AI Course Sales CRM") — its design tokens (colors, type scale, spacing, radii) and component patterns were carried over into the Jinja templates; fictional/decorative elements from the mockup (a fake persona, made-up stats) were dropped in favor of real data. See [UI Specification](docs/04%20-%20UI%20Specification.md) for the functional spec, which takes priority over the mockup wherever the two disagree.
+
+## Screenshots
+
+### Executive Dashboard
+Pipeline KPIs, course demand vs. capacity, revenue by course, lead pipeline by status, and lead sources — all computed live from Supabase.
+
+![Executive Dashboard](screenshots/executive-dashboard.png)
+
+### Leads
+Searchable, filterable lead directory with status management and convert-to-registration.
+
+![Leads](screenshots/leads.png)
+
+### Courses
+Course catalog showing enrolled/interested counts and capacity fill percentage.
+
+![Courses](screenshots/courses.png)
+
+### ML Predictions
+Purchase probability, priority tier, and top contributing factors for every active lead.
+
+![ML Predictions](screenshots/ml-predictions.png)
 
 ## Architecture
 
