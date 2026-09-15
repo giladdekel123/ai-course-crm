@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% from "partials/badges.html" import status_badge, priority_badge, avatar %}
+{% block title %}ML Predictions - AI Course CRM{% endblock %}
+{% block content %}
+<div class="flex flex-col gap-space-xs">
+  <h1 class="font-headline-lg text-headline-lg text-on-surface tracking-tight">ML Predictions</h1>
+  <div class="flex items-center gap-space-sm font-label-sm text-label-sm text-on-surface-variant flex-wrap">
+    <span>Logistic regression, trained {{ metrics.trained_at.split("T")[0] }} on {{ metrics.n_total }} historical leads</span>
+    <span>&bull;</span>
+    <span>Accuracy: <strong class="text-on-surface font-headline-sm">{{ (metrics.accuracy * 100) | round(1) }}%</strong></span>
+    <span>&bull;</span>
+    <span>Precision: <strong class="text-on-surface font-headline-sm">{{ (metrics.precision * 100) | round(1) }}%</strong></span>
+    <span>&bull;</span>
+    <span>Recall: <strong class="text-on-surface font-headline-sm">{{ (metrics.recall * 100) | round(1) }}%</strong></span>
+    <span>&bull;</span>
+    <span>ROC-AUC: <strong class="text-on-surface font-headline-sm">{{ metrics.roc_auc | round(3) }}</strong></span>
+  </div>
+  <p class="font-body-sm text-body-sm text-outline">Measured on a held-out test split, not the training data.</p>
+</div>
+
+<section class="grid grid-cols-2 lg:grid-cols-3 gap-space-md">
+  <div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm flex flex-col justify-between">
+    <div class="flex items-center justify-between">
+      <span class="font-label-md text-label-md text-on-surface-variant">High Propensity Leads</span>
+      <span class="material-symbols-outlined text-[18px] text-primary">bolt</span>
+    </div>
+    <div class="mt-space-sm font-numeric-metric text-numeric-metric text-on-surface">{{ summary.high_count }}</div>
+    <span class="font-body-sm text-body-sm text-on-surface-variant mt-space-xs">&gt;66% purchase probability</span>
+  </div>
+  <div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm flex flex-col justify-between">
+    <div class="flex items-center justify-between">
+      <span class="font-label-md text-label-md text-on-surface-variant">Avg Purchase Probability</span>
+      <span class="material-symbols-outlined text-[18px] text-tertiary">analytics</span>
+    </div>
+    <div class="mt-space-sm font-numeric-metric text-numeric-metric text-on-surface">{{ summary.avg_probability }}%</div>
+    <span class="font-body-sm text-body-sm text-on-surface-variant mt-space-xs">Across {{ summary.total }} active leads</span>
+  </div>
+  <div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm flex flex-col justify-between">
+    <div class="flex items-center justify-between">
+      <span class="font-label-md text-label-md text-on-surface-variant">Model Accuracy</span>
+      <span class="material-symbols-outlined text-[18px] text-secondary">verified</span>
+    </div>
+    <div class="mt-space-sm font-numeric-metric text-numeric-metric text-on-surface">{{ (metrics.accuracy * 100) | round(1) }}%</div>
+    <span class="font-body-sm text-body-sm text-on-surface-variant mt-space-xs">Validated on {{ metrics.n_test }} held-out leads</span>
+  </div>
+</section>
+
+<div class="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden">
+  <div class="overflow-x-auto">
+    <table class="w-full text-left border-collapse">
+      <thead>
+        <tr class="bg-surface-container-low">
+          <th class="py-space-sm px-space-md font-label-sm text-label-sm text-outline uppercase tracking-wider">Lead</th>
+          <th class="py-space-sm px-space-md font-label-sm text-label-sm text-outline uppercase tracking-wider">Course of Interest</th>
+          <th class="py-space-sm px-space-md font-label-sm text-label-sm text-outline uppercase tracking-wider">Current Status</th>
+          <th class="py-space-sm px-space-md font-label-sm text-label-sm text-outline uppercase tracking-wider">Purchase Probability</th>
+          <th class="py-space-sm px-space-md font-label-sm text-label-sm text-outline uppercase tracking-wider">Priority</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-surface-container-low">
+        {% for p in predictions %}
+        <tr class="bg-surface-container-lowest hover:bg-surface-container-low/70 transition-colors">
+          <td class="py-space-md px-space-md align-top">
+            <div class="flex items-start gap-space-sm min-w-[200px]">
+              {{ avatar(p.name) }}
+              <a href="{{ url_for('leads.view_lead', lead_id=p.lead_id) }}" class="font-headline-sm text-headline-sm text-on-surface hover:text-primary transition-colors">{{ p.name }}</a>
+            </div>
+          </td>
+          <td class="py-space-md px-space-md align-top font-label-md text-label-md text-on-surface">{{ p.course_name or "-" }}</td>
+          <td class="py-space-md px-space-md align-top">{{ status_badge(p.status) }}</td>
+          <td class="py-space-md px-space-md align-top">
+            <div class="flex flex-col gap-1 w-28">
+              <div class="flex items-center justify-between">
+                <span class="font-headline-sm text-headline-sm text-on-surface font-bold">{{ p.probability }}%</span>
+              </div>
+              <div class="w-full bg-surface-container-high h-1.5 rounded-full overflow-hidden">
+                <div class="{{ 'bg-primary' if p.priority == 'High' else ('bg-secondary' if p.priority == 'Medium' else 'bg-outline') }} h-full rounded-full" style="width: {{ p.probability }}%"></div>
+              </div>
+            </div>
+          </td>
+          <td class="py-space-md px-space-md align-top">{{ priority_badge(p.priority) }}</td>
+        </tr>
+        <tr class="bg-surface-container-low/40">
+          <td class="px-space-md py-space-xs" colspan="5">
+            <div class="flex items-center gap-space-sm flex-wrap">
+              <span class="font-label-sm text-label-sm text-outline flex items-center gap-0.5">
+                <span class="material-symbols-outlined text-[13px] text-tertiary">psychology</span>
+                Main Factors:
+              </span>
+              {% for factor in p.top_factors %}
+              <span class="inline-flex items-center gap-1 px-space-sm py-0.5 bg-surface-container-lowest text-label-sm font-label-sm rounded-md shadow-sm {{ 'text-primary' if factor.direction == 'positive' else 'text-error' }}">
+                {{ "+" if factor.direction == "positive" else "-" }} {{ factor.label }}
+              </span>
+              {% endfor %}
+            </div>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="5" class="py-8 px-space-md text-center text-on-surface-variant font-body-sm">No active leads to score.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

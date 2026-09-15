@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% from "partials/badges.html" import status_badge, avatar %}
+{% block title %}Leads - AI Course CRM{% endblock %}
+{% block content %}
+
+<div class="bg-surface-container-lowest rounded-xl shadow-sm flex flex-col">
+  <div class="p-space-lg flex flex-col lg:flex-row lg:items-center justify-between gap-space-md">
+    <div class="flex flex-col">
+      <div class="flex items-center gap-space-sm">
+        <h1 class="font-headline-lg text-headline-lg text-on-surface tracking-tight">Leads Directory</h1>
+        <span class="px-2.5 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm font-semibold">{{ leads | length }} shown</span>
+      </div>
+      <p class="font-body-md text-body-md text-on-surface-variant mt-1">Search, filter, and manage every lead in the pipeline.</p>
+    </div>
+    <a href="{{ url_for('leads.new_lead') }}" class="flex items-center gap-space-xs px-space-md py-2 bg-primary hover:bg-primary-container text-on-primary font-label-md text-label-md rounded-lg transition-colors shadow-sm w-fit">
+      <span class="material-symbols-outlined text-[18px]">person_add</span>
+      <span>New Lead</span>
+    </a>
+  </div>
+
+  <form method="get" class="px-space-lg py-space-md bg-surface-container-low flex flex-wrap items-center gap-space-sm">
+    <div class="relative min-w-[260px] flex-1 max-w-sm">
+      <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[18px]">search</span>
+      <input name="q" value="{{ search }}" placeholder="Filter by name, email, or phone..."
+             class="w-full pl-9 pr-3 py-1.5 text-body-sm font-body-sm bg-surface-container-lowest text-on-surface rounded-lg shadow-sm focus:outline-none focus:ring-1 focus:ring-primary" type="text">
+    </div>
+    <div class="relative">
+      <select name="status" class="appearance-none bg-surface-container-lowest pl-3 pr-8 py-1.5 font-body-sm text-body-sm text-on-surface rounded-lg shadow-sm focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer">
+        <option value="">All Statuses</option>
+        {% for s in statuses %}
+        <option value="{{ s }}" {{ "selected" if s == selected_status else "" }}>{{ s }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="relative">
+      <select name="source" class="appearance-none bg-surface-container-lowest pl-3 pr-8 py-1.5 font-body-sm text-body-sm text-on-surface rounded-lg shadow-sm focus:outline-none focus:ring-1 focus:ring-primary cursor-pointer">
+        <option value="">All Sources</option>
+        {% for s in sources %}
+        <option value="{{ s }}" {{ "selected" if s == selected_source else "" }}>{{ s }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <button type="submit" class="px-space-md py-1.5 bg-primary text-on-primary font-label-md text-label-md rounded-lg shadow-sm">Filter</button>
+    {% if selected_status or selected_source or search %}
+    <a href="{{ url_for('leads.list_leads') }}" class="font-label-sm text-label-sm text-on-surface-variant hover:text-on-surface flex items-center gap-1">
+      <span class="material-symbols-outlined text-[16px]">restart_alt</span> Clear
+    </a>
+    {% endif %}
+  </form>
+
+  <div class="overflow-x-auto w-full">
+    <table class="w-full text-left border-collapse">
+      <thead>
+        <tr class="bg-surface-container-low text-on-surface-variant font-label-sm text-label-sm uppercase tracking-wider select-none">
+          <th class="py-3 px-space-md">Lead Name</th>
+          <th class="py-3 px-space-md">Phone</th>
+          <th class="py-3 px-space-md">Email</th>
+          <th class="py-3 px-space-md">Course Interest</th>
+          <th class="py-3 px-space-md">Status</th>
+          <th class="py-3 px-space-md">Source</th>
+          <th class="py-3 px-space-md">Created</th>
+          <th class="py-3 px-space-md text-right">Actions</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-surface-container-high font-body-sm text-body-sm text-on-surface">
+        {% for lead in leads %}
+        <tr class="hover:bg-surface-container-low transition-colors group">
+          <td class="py-3.5 px-space-md">
+            <div class="flex items-center gap-space-sm">
+              {{ avatar(lead.name) }}
+              <span class="font-label-lg text-label-lg text-on-surface font-semibold truncate group-hover:text-primary transition-colors">{{ lead.name }}</span>
+            </div>
+          </td>
+          <td class="py-3.5 px-space-md whitespace-nowrap">{{ lead.phone or "-" }}</td>
+          <td class="py-3.5 px-space-md text-on-surface-variant">{{ lead.email or "-" }}</td>
+          <td class="py-3.5 px-space-md">
+            {% if lead.course_name %}
+            <span class="inline-flex items-center px-2 py-0.5 rounded-md bg-secondary-container text-on-secondary-container font-label-sm text-label-sm font-medium">{{ lead.course_name }}</span>
+            {% else %}-{% endif %}
+          </td>
+          <td class="py-3.5 px-space-md">{{ status_badge(lead.status) }}</td>
+          <td class="py-3.5 px-space-md text-on-surface-variant">{{ lead.source or "-" }}</td>
+          <td class="py-3.5 px-space-md text-on-surface-variant whitespace-nowrap">{{ lead.created_at | date }}</td>
+          <td class="py-3.5 px-space-md text-right">
+            <div class="flex items-center justify-end gap-1">
+              <a href="{{ url_for('leads.view_lead', lead_id=lead.id) }}" class="px-2.5 py-1 rounded-lg text-label-sm font-label-sm text-primary hover:bg-surface-container transition-colors">View</a>
+              <a href="{{ url_for('leads.edit_lead', lead_id=lead.id) }}" class="px-2.5 py-1 rounded-lg text-label-sm font-label-sm text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors">Edit</a>
+            </div>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="8" class="py-8 px-space-md text-center text-on-surface-variant font-body-sm">No leads found.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

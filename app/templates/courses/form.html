@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}{{ "Edit Course" if mode == "edit" else "New Course" }} - AI Course CRM{% endblock %}
+{% block content %}
+<h1 class="font-headline-lg text-headline-lg text-on-surface tracking-tight">{{ "Edit Course" if mode == "edit" else "New Course" }}</h1>
+
+<form method="post" class="bg-surface-container-lowest rounded-xl shadow-sm p-space-lg max-w-2xl space-y-space-md">
+  {{ form.hidden_tag() }}
+
+  {% for field in [form.course_name, form.description, form.start_date, form.duration, form.price, form.capacity, form.delivery_format] %}
+  <div>
+    {{ field.label(class="block font-label-md text-label-md text-on-surface mb-1") }}
+    {{ field(class="w-full bg-surface-container-lowest border border-outline-variant rounded-xl px-space-md py-space-sm text-body-sm font-body-sm focus:outline-none focus:ring-1 focus:ring-primary") }}
+    {% for error in field.errors %}<div class="text-error font-body-sm text-body-sm mt-1">{{ error }}</div>{% endfor %}
+  </div>
+  {% endfor %}
+
+  <div class="flex gap-space-sm pt-space-xs">
+    {{ form.submit(class="bg-primary hover:bg-primary-container text-on-primary px-space-md py-space-sm rounded-xl font-label-md text-label-md transition-colors shadow-sm") }}
+    <a href="{{ url_for('courses.list_courses') }}" class="px-space-md py-space-sm rounded-xl font-label-md text-label-md text-on-surface bg-surface-container-low hover:bg-surface-container transition-colors">Cancel</a>
+  </div>
+</form>
+{% endblock %}

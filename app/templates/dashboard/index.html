@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+{% block title %}Dashboard - AI Course CRM{% endblock %}
+{% block content %}
+<div class="flex flex-col">
+  <h1 class="font-headline-lg text-headline-lg text-on-surface tracking-tight">Dashboard</h1>
+  <p class="font-body-md text-body-md text-on-surface-variant mt-1">Course sales and enrollment activity, updated live from the CRM.</p>
+</div>
+
+<section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-space-md">
+  <div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm">
+    <span class="font-label-sm text-label-sm uppercase tracking-wider text-outline">New Leads</span>
+    <div class="font-numeric-metric text-numeric-metric text-on-surface mt-1">{{ stats.total_new }}</div>
+  </div>
+  <div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm">
+    <span class="font-label-sm text-label-sm uppercase tracking-wider text-outline">Interested Leads</span>
+    <div class="font-numeric-metric text-numeric-metric text-on-surface mt-1">{{ stats.total_interested }}</div>
+  </div>
+  <div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm">
+    <span class="font-label-sm text-label-sm uppercase tracking-wider text-outline">Converted</span>
+    <div class="font-numeric-metric text-numeric-metric text-on-surface mt-1">{{ stats.total_converted }}</div>
+  </div>
+  <div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm">
+    <span class="font-label-sm text-label-sm uppercase tracking-wider text-outline">Conversion Rate</span>
+    <div class="font-numeric-metric text-numeric-metric text-primary mt-1">{{ stats.conversion_rate }}%</div>
+  </div>
+  <div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm">
+    <div class="flex items-center gap-1.5">
+      <span class="font-label-sm text-label-sm uppercase tracking-wider text-error">Needs Follow-up</span>
+      {% if stats.leads_requiring_follow_up %}<span class="w-2 h-2 rounded-full bg-error animate-pulse"></span>{% endif %}
+    </div>
+    <div class="font-numeric-metric text-numeric-metric text-error mt-1">{{ stats.leads_requiring_follow_up }}</div>
+  </div>
+</section>
+
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-space-lg items-start">
+  <div class="lg:col-span-7 flex flex-col gap-space-lg">
+
+    <div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col gap-space-md">
+      <div>
+        <h2 class="font-headline-md text-headline-md text-on-surface">Course Demand &amp; Capacity</h2>
+        <p class="font-body-sm text-body-sm text-on-surface-variant">Enrolled learners vs. prospective interested leads, per active course</p>
+      </div>
+      <div class="flex flex-col gap-space-sm">
+        {% for course in stats.courses %}
+        <div class="bg-surface-container-low/60 hover:bg-surface-container-low transition-colors p-space-sm rounded-xl flex flex-col gap-space-xs">
+          <div class="flex items-center justify-between text-label-md font-label-md">
+            <span class="font-semibold text-on-surface">{{ course.course_name }}</span>
+            <span class="text-on-surface-variant font-body-sm">Cap: {{ course.capacity }} seats</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <div class="flex-1 w-full h-3 bg-surface-container-highest/60 rounded-full overflow-hidden">
+              <div class="h-full bg-primary rounded-full transition-all duration-500" style="width: {{ [course.capacity_filled_pct, 100] | min }}%;"></div>
+            </div>
+            <div class="flex items-center gap-2 text-label-sm font-label-sm min-w-[160px] justify-end">
+              <span class="text-primary font-bold">{{ course.enrolled_count }} enrolled</span>
+              <span class="text-outline">/</span>
+              <span class="text-on-surface-variant font-medium">{{ course.interested_count }} interested</span>
+            </div>
+          </div>
+        </div>
+        {% else %}
+        <p class="font-body-sm text-body-sm text-on-surface-variant">No active courses yet.</p>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col gap-space-md">
+      <div>
+        <h2 class="font-headline-md text-headline-md text-on-surface">Lead Pipeline by Status</h2>
+        <p class="font-body-sm text-body-sm text-on-surface-variant">{{ stats.total_leads }} total leads across the funnel</p>
+      </div>
+      <div class="flex flex-col gap-2.5">
+        {% for row in stats.pipeline_by_status %}
+        {% set pct = (row.count / stats.total_leads * 100) if stats.total_leads else 0 %}
+        <div class="flex items-center justify-between">
+          <div class="w-36 text-body-sm font-label-md text-on-surface">{{ row.status }}</div>
+          <div class="flex-1 mx-3 h-6 bg-surface-container-low rounded-lg p-0.5 overflow-hidden flex">
+            <div class="h-full bg-primary-container rounded-md flex items-center px-2 text-on-primary font-label-sm text-label-sm transition-all duration-500" style="width: {{ pct }}%;">
+              {% if pct > 12 %}{{ pct | round(1) }}%{% endif %}
+            </div>
+          </div>
+          <span class="w-16 text-right font-label-md text-label-md text-on-surface font-semibold">{{ row.count }}</span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+
+  <div class="lg:col-span-5 flex flex-col gap-space-lg">
+    <div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex flex-col gap-space-md">
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="font-headline-md text-headline-md text-on-surface">Revenue by Course</h2>
+          <p class="font-body-sm text-body-sm text-on-surface-variant">Realized bookings from converted leads</p>
+        </div>
+        <div class="text-right">
+          <span class="font-label-sm text-label-sm text-outline uppercase tracking-wider">Total Revenue</span>
+          <div class="font-numeric-metric text-numeric-metric text-primary leading-none mt-0.5">{{ stats.total_revenue | currency }}</div>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 gap-2">
+        {% for row in stats.revenue_by_course %}
+        <div class="p-space-sm rounded-xl bg-surface-container-low/60 flex items-center justify-between">
+          <span class="font-label-md text-label-md text-on-surface truncate">{{ row.course_name }}</span>
+          <span class="text-right font-headline-sm text-headline-sm text-on-surface shrink-0 ml-2">{{ row.revenue | currency }}</span>
+        </div>
+        {% else %}
+        <p class="font-body-sm text-body-sm text-on-surface-variant">No registrations yet.</p>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex flex-col gap-space-md">
+      <h2 class="font-headline-md text-headline-md text-on-surface">Lead Sources</h2>
+      <div class="grid grid-cols-2 gap-2">
+        {% for row in stats.lead_sources %}
+        <div class="bg-surface-container-low p-space-sm rounded-xl flex flex-col items-center text-center">
+          <div class="font-headline-lg text-headline-lg text-primary leading-tight">{{ row.count }}</div>
+          <span class="font-label-sm text-label-sm text-on-surface font-semibold mt-1">{{ row.source }}</span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

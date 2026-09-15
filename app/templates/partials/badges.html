@@ -1,0 +1,32 @@
+{% macro status_badge(status) %}
+{% set styles = {
+  'New': 'bg-secondary-container text-on-secondary-container',
+  'Contacted': 'bg-tertiary-fixed text-on-tertiary-fixed',
+  'Follow-up': 'bg-error-container text-on-error-container',
+  'Interested': 'bg-surface-container-highest text-primary',
+  'Converted': 'bg-primary-fixed text-on-primary-fixed font-bold',
+  'Not Interested': 'bg-surface-container-high text-on-surface-variant',
+} %}
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full font-label-sm text-label-sm font-semibold {{ styles.get(status, 'bg-surface-container-high text-on-surface-variant') }}">
+  {% if status == 'Follow-up' %}<span class="w-1.5 h-1.5 rounded-full bg-error animate-pulse"></span>{% endif %}
+  {% if status == 'Interested' %}<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>{% endif %}
+  {{ status }}
+</span>
+{% endmacro %}
+
+{% macro priority_badge(priority) %}
+{% set styles = {
+  'High': 'bg-error-container text-on-error-container font-bold',
+  'Medium': 'bg-secondary-container text-on-secondary-container font-semibold',
+  'Low': 'bg-surface-container-high text-on-surface-variant font-semibold',
+} %}
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md font-label-sm text-label-sm {{ styles.get(priority, 'bg-surface-container-high text-on-surface-variant font-semibold') }}">
+  {% if priority == 'High' %}<span class="w-1.5 h-1.5 rounded-full bg-error animate-pulse"></span>{% endif %}
+  {{ priority }} Priority
+</span>
+{% endmacro %}
+
+{% macro avatar(name) %}
+{% set initials = name.split(" ") | map("first") | join("") | upper %}
+<div class="w-9 h-9 rounded-full bg-primary-container text-on-primary font-headline-sm text-body-sm flex items-center justify-center font-bold shrink-0">{{ initials[:2] }}</div>
+{% endmacro %}

@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% from "partials/badges.html" import status_badge, avatar %}
+{% block title %}{{ lead.name }} - AI Course CRM{% endblock %}
+{% block content %}
+<div class="flex items-center justify-between">
+  <div class="flex items-center gap-space-sm">
+    {{ avatar(lead.name) }}
+    <div>
+      <h1 class="font-headline-lg text-headline-lg text-on-surface tracking-tight">{{ lead.name }}</h1>
+      <div class="mt-1">{{ status_badge(lead.status) }}</div>
+    </div>
+  </div>
+  <a href="{{ url_for('leads.edit_lead', lead_id=lead.id) }}" class="px-space-md py-space-sm rounded-xl font-label-md text-label-md text-on-surface bg-surface-container-low hover:bg-surface-container transition-colors">Edit</a>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-space-lg">
+  <div class="lg:col-span-2 bg-surface-container-lowest rounded-xl shadow-sm p-space-lg">
+    <h2 class="font-headline-md text-headline-md text-on-surface mb-space-md">Profile</h2>
+    <dl class="grid grid-cols-2 gap-space-md font-body-sm text-body-sm">
+      <div><dt class="text-outline uppercase tracking-wider text-label-sm font-label-sm mb-0.5">Phone</dt><dd class="text-on-surface">{{ lead.phone or "-" }}</dd></div>
+      <div><dt class="text-outline uppercase tracking-wider text-label-sm font-label-sm mb-0.5">Email</dt><dd class="text-on-surface">{{ lead.email or "-" }}</dd></div>
+      <div><dt class="text-outline uppercase tracking-wider text-label-sm font-label-sm mb-0.5">Age</dt><dd class="text-on-surface">{{ lead.age or "-" }}</dd></div>
+      <div><dt class="text-outline uppercase tracking-wider text-label-sm font-label-sm mb-0.5">City</dt><dd class="text-on-surface">{{ lead.city or "-" }}</dd></div>
+      <div><dt class="text-outline uppercase tracking-wider text-label-sm font-label-sm mb-0.5">Occupation</dt><dd class="text-on-surface">{{ lead.occupation or "-" }}</dd></div>
+      <div><dt class="text-outline uppercase tracking-wider text-label-sm font-label-sm mb-0.5">Education</dt><dd class="text-on-surface">{{ lead.education or "-" }}</dd></div>
+      <div><dt class="text-outline uppercase tracking-wider text-label-sm font-label-sm mb-0.5">Technical Experience</dt><dd class="text-on-surface">{{ lead.technical_experience or "-" }}</dd></div>
+      <div><dt class="text-outline uppercase tracking-wider text-label-sm font-label-sm mb-0.5">Reason for Interest</dt><dd class="text-on-surface">{{ lead.reason_for_interest or "-" }}</dd></div>
+      <div><dt class="text-outline uppercase tracking-wider text-label-sm font-label-sm mb-0.5">Source</dt><dd class="text-on-surface">{{ lead.source or "-" }}</dd></div>
+      <div><dt class="text-outline uppercase tracking-wider text-label-sm font-label-sm mb-0.5">Course Interest</dt><dd class="text-on-surface">{{ lead.course_name or "-" }}</dd></div>
+      <div><dt class="text-outline uppercase tracking-wider text-label-sm font-label-sm mb-0.5">Created</dt><dd class="text-on-surface">{{ lead.created_at | date }}</dd></div>
+    </dl>
+  </div>
+
+  <div class="flex flex-col gap-space-lg">
+    <div class="bg-surface-container-lowest rounded-xl shadow-sm p-space-lg">
+      <h2 class="font-headline-md text-headline-md text-on-surface mb-space-md">Update Status</h2>
+      <form method="post" action="{{ url_for('leads.update_status', lead_id=lead.id) }}" class="space-y-space-sm">
+        {{ status_form.hidden_tag() }}
+        {{ status_form.status(class="w-full bg-surface-container-lowest border border-outline-variant rounded-xl px-space-md py-space-sm text-body-sm font-body-sm focus:outline-none focus:ring-1 focus:ring-primary") }}
+        {{ status_form.submit(class="w-full bg-surface-container-low hover:bg-surface-container text-on-surface px-space-md py-space-sm rounded-xl font-label-md text-label-md transition-colors") }}
+      </form>
+    </div>
+
+    {% if lead.status not in ("Converted", "Not Interested") %}
+    <div class="bg-surface-container-lowest rounded-xl shadow-sm p-space-lg">
+      <h2 class="font-headline-md text-headline-md text-on-surface mb-space-md flex items-center gap-space-xs">
+        <span class="material-symbols-outlined text-primary text-[20px]">school</span>
+        Convert to Registration
+      </h2>
+      <form method="post" action="{{ url_for('leads.convert_lead', lead_id=lead.id) }}" class="space-y-space-sm">
+        {{ convert_form.hidden_tag() }}
+        {% for field in [convert_form.course_id, convert_form.enrollment_date, convert_form.amount_paid, convert_form.payment_method] %}
+        <div>
+          {{ field.label(class="block font-label-md text-label-md text-on-surface mb-1") }}
+          {{ field(class="w-full bg-surface-container-lowest border border-outline-variant rounded-xl px-space-md py-space-sm text-body-sm font-body-sm focus:outline-none focus:ring-1 focus:ring-primary") }}
+        </div>
+        {% endfor %}
+        {{ convert_form.submit(class="w-full bg-primary hover:bg-primary-container text-on-primary px-space-md py-space-sm rounded-xl font-label-md text-label-md transition-colors shadow-sm") }}
+      </form>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

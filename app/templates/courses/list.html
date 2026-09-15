@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block title %}Courses - AI Course CRM{% endblock %}
+{% block content %}
+<div class="flex items-center justify-between">
+  <div>
+    <h1 class="font-headline-lg text-headline-lg text-on-surface tracking-tight">Course Catalog</h1>
+    <p class="font-body-md text-body-md text-on-surface-variant mt-1">Manage AI courses, schedules, pricing, and capacity.</p>
+  </div>
+  <a href="{{ url_for('courses.new_course') }}" class="flex items-center gap-space-xs px-space-md py-2 bg-primary hover:bg-primary-container text-on-primary font-label-md text-label-md rounded-lg transition-colors shadow-sm">
+    <span class="material-symbols-outlined text-[18px]">add</span>
+    <span>New Course</span>
+  </a>
+</div>
+
+<div class="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden">
+  <div class="overflow-x-auto">
+    <table class="w-full text-left border-collapse min-w-[960px]">
+      <thead>
+        <tr class="bg-surface-container-low/70">
+          <th class="py-space-sm px-space-md font-label-sm text-label-sm text-outline uppercase tracking-wider">Course Name</th>
+          <th class="py-space-sm px-space-md font-label-sm text-label-sm text-outline uppercase tracking-wider">Start Date</th>
+          <th class="py-space-sm px-space-md font-label-sm text-label-sm text-outline uppercase tracking-wider">Duration</th>
+          <th class="py-space-sm px-space-md font-label-sm text-label-sm text-outline uppercase tracking-wider">Price</th>
+          <th class="py-space-sm px-space-md font-label-sm text-label-sm text-outline uppercase tracking-wider">Capacity</th>
+          <th class="py-space-sm px-space-md font-label-sm text-label-sm text-outline uppercase tracking-wider w-56">Enrolled</th>
+          <th class="py-space-sm px-space-md font-label-sm text-label-sm text-outline uppercase tracking-wider">Interested</th>
+          <th class="py-space-sm px-space-md font-label-sm text-label-sm text-outline uppercase tracking-wider">Status</th>
+          <th class="py-space-sm px-space-md font-label-sm text-label-sm text-outline uppercase tracking-wider text-right">Actions</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-surface-container-low">
+        {% for course in courses %}
+        <tr class="hover:bg-surface-container-low/50 transition-colors">
+          <td class="py-space-sm px-space-md align-middle">
+            <div class="flex items-center gap-space-sm">
+              <div class="w-10 h-10 rounded-lg bg-surface-container-high flex items-center justify-center text-primary shrink-0">
+                <span class="material-symbols-outlined text-[20px]">menu_book</span>
+              </div>
+              <div class="flex flex-col min-w-0">
+                <span class="font-headline-sm text-headline-sm text-on-surface font-semibold truncate">{{ course.course_name }}</span>
+                <span class="font-body-sm text-body-sm text-on-surface-variant">{{ course.delivery_format }}</span>
+              </div>
+            </div>
+          </td>
+          <td class="py-space-sm px-space-md align-middle whitespace-nowrap font-label-md text-label-md text-on-surface">{{ course.start_date }}</td>
+          <td class="py-space-sm px-space-md align-middle whitespace-nowrap font-body-md text-body-md text-on-surface">{{ course.duration }}</td>
+          <td class="py-space-sm px-space-md align-middle whitespace-nowrap">
+            <span class="font-headline-sm text-headline-sm text-on-surface font-semibold">{{ course.price | currency }}</span>
+            <span class="block font-body-sm text-body-sm text-outline">/ seat</span>
+          </td>
+          <td class="py-space-sm px-space-md align-middle whitespace-nowrap font-label-md text-label-md text-on-surface">{{ course.capacity }} seats</td>
+          <td class="py-space-sm px-space-md align-middle">
+            <div class="flex flex-col gap-1">
+              <div class="flex items-center justify-between text-body-sm font-body-sm">
+                <span class="font-semibold text-on-surface">{{ course.enrolled_count }} ({{ course.capacity_filled_pct }}%)</span>
+                {% if course.capacity_filled_pct >= 90 %}
+                <span class="px-1.5 py-0.5 rounded bg-error-container text-on-error-container font-label-sm text-label-sm font-semibold">Almost Full</span>
+                {% elif course.capacity_filled_pct >= 70 %}
+                <span class="px-1.5 py-0.5 rounded bg-secondary-container text-on-secondary-container font-label-sm text-label-sm font-semibold">Filling Up</span>
+                {% endif %}
+              </div>
+              <div class="w-full bg-surface-container rounded-full h-2 overflow-hidden">
+                <div class="{{ 'bg-error' if course.capacity_filled_pct >= 90 else 'bg-primary' }} h-full rounded-full transition-all" style="width: {{ [course.capacity_filled_pct, 100] | min }}%;"></div>
+              </div>
+            </div>
+          </td>
+          <td class="py-space-sm px-space-md align-middle font-label-md text-label-md text-on-surface">{{ course.interested_count }}</td>
+          <td class="py-space-sm px-space-md align-middle">
+            {% if course.is_active %}
+            <span class="inline-flex items-center px-2 py-0.5 rounded-full font-label-sm text-label-sm font-semibold bg-primary-fixed text-on-primary-fixed">Active</span>
+            {% else %}
+            <span class="inline-flex items-center px-2 py-0.5 rounded-full font-label-sm text-label-sm font-semibold bg-surface-container-high text-on-surface-variant">Archived</span>
+            {% endif %}
+          </td>
+          <td class="py-space-sm px-space-md align-middle text-right whitespace-nowrap">
+            <div class="flex items-center justify-end gap-1">
+              <a href="{{ url_for('courses.edit_course', course_id=course.id) }}" class="px-2.5 py-1 rounded-lg text-label-sm font-label-sm text-primary hover:bg-surface-container transition-colors">Edit</a>
+              {% if course.is_active %}
+              <form method="post" action="{{ url_for('courses.archive_course', course_id=course.id) }}" class="inline">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="px-2.5 py-1 rounded-lg text-label-sm font-label-sm text-error hover:bg-error-container transition-colors">Archive</button>
+              </form>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="9" class="py-8 px-space-md text-center text-on-surface-variant font-body-sm">No courses yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
